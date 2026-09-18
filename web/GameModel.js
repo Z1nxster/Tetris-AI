@@ -1,6 +1,6 @@
 // Pure Tetris game logic — no rendering, no DOM, no timers.
 
-class Game {
+export default class Game {
     ROWS = 20;        // visible playfield height
     COLS = 10;        // playfield width
     BUFFER_ROWS = 4;  // hidden spawn area above the visible field
@@ -50,6 +50,9 @@ class Game {
         return {
             board: this.createEmptyBoard(),
             piece: this.spawnPiece(),
+            nextPiece: this.setRawPiece(),
+            storage: {name: null, shape: null},
+            canHold: true,
             score: 0,
             level: 0,
             totalLines: 0,
@@ -57,16 +60,29 @@ class Game {
         };
     }
 
-    spawnPiece() {
+    // randomly chooses a shape
+    setRawPiece() {
         const index = Math.floor(Math.random() * this.TETROMINO_SHAPES.length);
         const template = this.TETROMINO_SHAPES[index];
         return {
             name: template.name,
             shape: template.shape.map(row => [...row]),
+        };
+    }
+
+    // adds shape to board
+    spawnPiece(rawPiece = this.setRawPiece()) {
+        return {
+            name: rawPiece.name,
+            shape: rawPiece.shape,
             xPos: 3,
             yPos: 0,
             rotationState: 0,
         };
+    }
+
+    getCellType(state, xPos, yPos) {
+        return state.board[yPos][xPos];
     }
 
     // ---------- Geometry ----------
@@ -183,11 +199,30 @@ class Game {
         if (rotated) state.piece = rotated;
     }
 
-    // ---------- Locking & clearing ----------
+    // ---------- Locking, clearing & storage ----------
 
     lockPiece(state) {
         for (const { x, y } of this.getPieceCells(state.piece)) {
             if (y >= 0) state.board[y][x] = state.piece.name;
+        }
+        state.canHold = true;
+    }
+
+    storePiece(state) {
+        if(state.canHold) {
+            const template = this.TETROMINO_SHAPES.find(template => template.name === state.piece.name);
+            const currentPieceRaw = { name: template.name, shape: template.shape.map(row => [...row]) };
+
+            if(state.storage.name === null){
+                state.storage = currentPieceRaw;
+                state.piece = this.spawnPiece(state.nextPiece);
+                state.nextPiece = this.setRawPiece();
+            } else {
+                const held = state.storage;
+                state.storage = currentPieceRaw;
+                state.piece = this.spawnPiece(held);
+            }
+            state.canHold = false;
         }
     }
 
@@ -196,7 +231,7 @@ class Game {
     * empty rows at the top. Returns how many rows were cleared.
     */
     clearLines(board) {
-        const remainingRows = board.filter(row => !row.every(cell => cell === true));
+        const remainingRows = board.filter(row => !row.every(cell => cell !== false));
         const clearedCount = board.length - remainingRows.length;
         const freshRows = Array.from({ length: clearedCount }, () => Array(this.COLS).fill(false));
         const rebuilt = [...freshRows, ...remainingRows];
@@ -243,7 +278,8 @@ class Game {
         state.score += this.calculateScore(linesCleared, state);
         this.updateLevel(state);
 
-        state.piece = this.spawnPiece();
+        state.piece = this.spawnPiece(state.nextPiece);
+        state.nextPiece = this.setRawPiece();
         if (this.isGameOver(state)) state.gameOver = true;
     }
 
@@ -264,8 +300,6 @@ class Game {
         console.log(lines.join("\n"));
     }
 }
-
-module.exports = Game;
 
 /*  * commented function to display each tick with no
     * outside input until game over for test purpose.

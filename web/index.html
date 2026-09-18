@@ -1,10 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tetris</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-$END$
+<div id="app">
+    <header>
+        <h1 class="title">Tetris</h1>
+    </header>
+
+    <main id="game-area">
+        <div id="board-wrap">
+            <svg id="board" role="img" aria-label="Tetris playfield"></svg>
+
+            <div id="game-over-overlay" class="hidden">
+                <p>Game over</p>
+                <button id="restart-button" type="button">New game</button>
+            </div>
+        </div>
+
+        <aside id="side-panel">
+            <section class="panel-box" id="hold-box">
+                <h2>Hold</h2>
+                <svg class="preview" id="hold-preview"></svg>
+            </section>
+
+            <section class="panel-box" id="next-box">
+                <h2>Next</h2>
+                <svg class="preview" id="next-preview"></svg>
+            </section>
+
+            <section class="panel-box" id="stats-box">
+                <dl>
+                    <div class="stat-row"><dt>Score</dt><dd id="score">0</dd></div>
+                    <div class="stat-row"><dt>Level</dt><dd id="level">0</dd></div>
+                    <div class="stat-row"><dt>Lines</dt><dd id="lines">0</dd></div>
+                </dl>
+            </section>
+
+            <button id="new-game-button" type="button">New game</button>
+        </aside>
+    </main>
+
+    <footer>
+        <p class="controls-hint">&larr; &rarr; move &middot; &darr; soft drop &middot; space hard drop &middot; Z rotate clockwise &middot; X rotate counterclockwise &middot; C hold</p>
+    </footer>
+</div>
+<script type="module" src="main.js"></script>
 </body>
 </html>
