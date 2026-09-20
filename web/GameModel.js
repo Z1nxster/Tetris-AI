@@ -45,8 +45,8 @@ export default class Game {
         () => Array(this.COLS).fill(false));
     }
 
-    //Bundles board + falling piece + score/level
-    createInitialState() {
+    // Bundles board + falling, storage and next pieces + score/level
+    createInitialState() { 
         return {
             board: this.createEmptyBoard(),
             piece: this.spawnPiece(),
@@ -76,11 +76,12 @@ export default class Game {
             name: rawPiece.name,
             shape: rawPiece.shape,
             xPos: 3,
-            yPos: 0,
+            yPos: this.BUFFER_ROWS - 1,
             rotationState: 0,
         };
     }
 
+    // returns if a cell is occupied on the board, falling piece not included
     getCellType(state, xPos, yPos) {
         return state.board[yPos][xPos];
     }
@@ -300,24 +301,3 @@ export default class Game {
         console.log(lines.join("\n"));
     }
 }
-
-/*  * commented function to display each tick with no
-    * outside input until game over for test purpose.
-
-function runLoop(state) {
-    console.clear();
-    game.printBoard(state);
-
-    if (state.gameOver) {
-        console.log(`stopped, gameOver=${state.gameOver}`);
-        return;
-    }
-
-    game.tick(state);
-    setTimeout(() => runLoop(state), 200);
-}
-
-const game = new Game();
-const runState = game.createInitialState();
-runLoop(runState);
-*/

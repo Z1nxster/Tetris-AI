@@ -21,16 +21,28 @@ export function initBoardSVG(svgElement, rows, cols) {
     }
     return boardRects;
 }
+    
+export function getExpectedPosition(game, state) {
+    const ghostPiece = {...state.piece, shape: state.piece.shape.map(row => [...row])};
+    const proxyState = { board: state.board, piece: ghostPiece};
+    while (game.softDrop(proxyState)) {}
+    return new Set(game.getPieceCells(proxyState.piece).map(({ x, y}) => `${y},${x}`));
+}
 
 export function renderBoard(game, state, cellRects) {
     const cells = new Set(game.getPieceCells(state.piece).map(({ x, y }) => `${y},${x}`));
+    const expectedPosition = getExpectedPosition(game, state);
     for (let y = game.BUFFER_ROWS; y < state.board.length; y++) {
         for (let x = 0; x < game.COLS; x++) {
             let cellType = game.getCellType(state, x, y);
-            if (cellType || cells.has(`${y},${x}`))
-                cellRects[y - game.BUFFER_ROWS][x].setAttribute("class", 'cell cell-${game.getCellType(state, x, y)}');
+            if(cells.has(`${y},${x}`)) 
+                cellRects[y - game.BUFFER_ROWS][x].setAttribute("class", `cell cell-${state.piece.name}`);
+            else if (cellType)
+                cellRects[y - game.BUFFER_ROWS][x].setAttribute("class", `cell cell-${cellType}`);
+            else if (expectedPosition.has(`${y},${x}`))
+                cellRects[y - game.BUFFER_ROWS][x].setAttribute("class", `cell cell-expected`);
             else
-                cellRects[y - game.BUFFER_ROWS][x].setAttribute("class", 'cell cell-empty');
+                cellRects[y - game.BUFFER_ROWS][x].setAttribute("class", `cell cell-empty`);
         }
     }
 }
@@ -45,13 +57,17 @@ export function renderStats(state) {
     linesElement.textContent = state.totalLines;
 }
 
-/*
- * OPTIONAL STRETCH — not required for a working game, come back to this
- * once movement/gravity/scoring are all rendering correctly.
- *
- * A renderPreview(pieceOrNull, svgElement) function could draw a piece's
- * shape into the small #next-preview / #hold-preview SVGs the same way
- * initBoardSVG draws the main board — set a small viewBox, create one
- * <rect> per filled shape cell. Handle the "nothing held yet" case
- * (state.storage.name === null) by just clearing the SVG's contents.
- */
+export function renderPreview(game, pieceOrNull, svgElement) {
+    svgElement.replaceChildren();
+    if (!pieceOrNull || !pieceOrNull.name) return;
+
+    const size = pieceOrNull.shape.length;
+    const preview = initBoardSVG(svgElement, size, size);
+    for (let row = 0; row < size; row++) {
+        for (let col = 0; col < size; col++) {
+            if (pieceOrNull.shape[row][col]) {
+                preview[row][col].setAttribute("class", `cell cell-${pieceOrNull.name}`);
+            }
+        }
+    }
+}

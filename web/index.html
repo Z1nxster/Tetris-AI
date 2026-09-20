@@ -18,9 +18,17 @@
     <main id="game-area">
         <div id="board-wrap">
             <svg id="board" role="img" aria-label="Tetris playfield"></svg>
-
             <div id="game-over-overlay" class="hidden">
-                <p>Game over</p>
+                <p class="go-title">Game over</p>
+                <p class="go-score">Score <span id="final-score">0</span></p>
+
+                <!-- Shown only when the run makes the top 10. scores.js decides. -->
+                <div id="name-entry" class="hidden">
+                    <label for="player-name">New high score — your name:</label>
+                    <input id="player-name" type="text" maxlength="16" autocomplete="off" placeholder="Guest">
+                    <button id="save-score-button" type="button">Save</button>
+                </div>
+
                 <button id="restart-button" type="button">New game</button>
             </div>
         </div>
@@ -47,6 +55,18 @@
             <button id="new-game-button" type="button">New game</button>
         </aside>
     </main>
+
+    <section class="panel-box" id="leaderboard-box">
+        <div class="leaderboard-head">
+            <h2>High scores</h2>
+            <button id="clear-scores-button" type="button" class="ghost-button">Clear</button>
+        </div>
+        <!-- renderLeaderboard() fills this. The empty-state <li> is the
+             placeholder shown before any scores exist. -->
+        <ol id="leaderboard">
+            <li class="leaderboard-empty">No scores yet — play a game.</li>
+        </ol>
+    </section>
 
     <footer>
         <p class="controls-hint">&larr; &rarr; move &middot; &darr; soft drop &middot; space hard drop &middot; Z rotate clockwise &middot; X rotate counterclockwise &middot; C hold</p>

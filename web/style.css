@@ -175,6 +175,11 @@ footer {
 }
 
 .cell-empty { fill: #14151f; }
+.cell-expected {
+  fill: rgba(222, 222, 221, 0.22);
+  stroke: var(--color-text-muted);
+  stroke-width: 0.06;
+}
 .cell-I { fill: var(--piece-I); }
 .cell-O { fill: var(--piece-O); }
 .cell-T { fill: var(--piece-T); }
@@ -218,8 +223,134 @@ footer {
   #game-over-overlay { transition: none; }
 }
 
+/* ---------- High-score name entry ---------- */
+ 
+#name-entry {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 80%;
+}
+ 
+#name-entry.hidden { display: none; }
+ 
+#name-entry label {
+  font-size: 12px;
+  color: var(--color-accent);
+  text-align: center;
+}
+ 
+#player-name {
+  width: 100%;
+  padding: 8px 10px;
+  background: var(--color-panel);
+  border: 1px solid var(--color-panel-border);
+  border-radius: 4px;
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  text-align: center;
+}
+ 
+#player-name:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+}
+ 
+#save-score-button { width: 100%; }
+ 
+/* ---------- Leaderboard ---------- */
+ 
+#leaderboard-box {
+  margin-top: 24px;
+}
+ 
+.leaderboard-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+ 
+.leaderboard-head h2 { margin: 0; }
+ 
+.ghost-button {
+  width: auto;
+  padding: 4px 10px;
+  background: transparent;
+  border: 1px solid var(--color-panel-border);
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+ 
+.ghost-button:hover {
+  filter: none;
+  color: var(--color-text);
+  border-color: var(--color-text-muted);
+}
+ 
+#leaderboard {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  counter-reset: rank;
+}
+ 
+#leaderboard li {
+  counter-increment: rank;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--color-panel-border);
+  font-size: 14px;
+}
+ 
+#leaderboard li:last-child { border-bottom: none; }
+ 
+#leaderboard li:not(.leaderboard-empty)::before {
+  content: counter(rank);
+  min-width: 20px;
+  font-family: var(--font-display);
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+ 
+/* The most recent run gets highlighted so it's findable in the list. */
+#leaderboard li.is-current {
+  color: var(--color-accent);
+}
+ 
+#leaderboard .entry-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+ 
+#leaderboard .entry-score {
+  font-family: var(--font-display);
+  font-size: 12px;
+}
+ 
+#leaderboard .leaderboard-empty {
+  color: var(--color-text-muted);
+  font-size: 13px;
+  justify-content: center;
+}
+ 
+#game-over-overlay button {
+  width: auto;
+  padding: 10px 20px;
+}
+ 
+@media (prefers-reduced-motion: reduce) {
+  #game-over-overlay { transition: none; }
+}
+ 
 /* ---------- Mobile ---------- */
-
+ 
 @media (max-width: 520px) {
   #game-area {
     flex-direction: column;
