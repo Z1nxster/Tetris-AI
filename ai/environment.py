@@ -7,7 +7,7 @@ class Game:
     ROWS = 20  # visible playfield height
     COLS = 10  # playfield width
     BUFFER_ROWS = 4  # hidden spawn area above the visible field
-
+    
     TETROMINO_SHAPES = [
         {"name": "I", "shape": [[0, 0, 0, 0], [1, 1, 1, 1], [0, 0, 0, 0], [0, 0, 0, 0]]},
         {"name": "O", "shape": [[1, 1], [1, 1]]},
@@ -41,6 +41,9 @@ class Game:
         "0->3": [[0, 0], [-1, 0], [2, 0], [-1, 2], [2, -1]],
     }
 
+    def __init__(self):
+        self.piece_bag = []
+
     # ---------- Setup ----------
 
     def create_empty_board(self):
@@ -60,9 +63,17 @@ class Game:
             "gameOver": False,
         }
 
+    def refill_shuffle_bag(self):
+        self.piece_bag = self.TETROMINO_SHAPES.copy()
+        random.shuffle(self.piece_bag)
+        return
+
     # randomly chooses a shape
     def set_raw_piece(self):
-        template = random.choice(self.TETROMINO_SHAPES)
+        if not self.piece_bag:
+            self.refill_shuffle_bag()
+
+        template = self.piece_bag.pop()
         return {
             "name": template["name"],
             "shape": copy.deepcopy(template["shape"]),

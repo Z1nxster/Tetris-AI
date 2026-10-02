@@ -1,40 +1,43 @@
-import features
 import agent
 import random
 from environment import Game
+from multiprocessing import Pool
 
 game = Game()
-WEIGHTS_COUNT = 4
+WEIGHTS_COUNT = 5
 
 class Player:
-    def __init__(self, weights=None, score=None):
+    def __init__(self, weights=None, lines=None, score=None):
         self.weights = weights
+        self.lines = lines
         self.score = score 
 
     def __repr__(self):
-        return f"Player(score = {self.score}, weights = {self.weights})"
+        return f"Player(lines = {self.lines}, score = {self.score}, weights = {[round(w, 3) for w in self.weights]})"
 
 def random_weights(n):
     return [random.uniform(-1, 1) for _ in range(n)]
 
 def create_population(size, n):
-    return [Player(weights=random_weights(n), score=0) for _ in range(size)]
+    return [Player(weights=random_weights(n), lines=0, score=0) for _ in range(size)]
 
-def evaluate_fitness(weights, n_games = 3):
+def evaluate_fitness(weights, n_games = 5):
+    total_lines = 0
     total_score = 0
 
-    for run in range(n_games):
+    for _ in range(n_games):
         state = game.create_initial_state()
         while not state["gameOver"]:
             agent.play_move(state, weights)
+        total_lines += state["totalLines"]
         total_score += state["score"]
 
-    return total_score / n_games
+    return [total_score / n_games, total_lines / n_games]
 
 def select_parents(population):
     def one_tournament():
         contenders = random.sample(population, k=min(3, len(population)))
-        return max(contenders, key=lambda p: p.score)
+        return max(contenders, key=lambda p: p.lines)
     return one_tournament(), one_tournament()
 
 def crossover(parent_a, parent_b):
@@ -49,23 +52,28 @@ def mutate(weights, rate, amount):
 
     for i in range(len(mutated)):
         if (random.random() <= rate):
-            mutated[i] = mutated[i] * random.uniform(-amount, amount)
+            mutated[i] += random.gauss(0, amount)
+            mutated[i] = max(-1, min(1, mutated[i]))
 
     return mutated
 
 def run_generation(players, population_size, rate, amount):
 
-    for player in players:
-        player.score = evaluate_fitness(player.weights)
+    with Pool() as pool:
+        res = pool.map(evaluate_fitness, [p.weights for p in players])
+    for player, (score, lines) in zip(players, res):
+        player.lines = lines
+        player.score = score
  
-    best = max(players, key=lambda p: p.score)
+    best = max(players, key=lambda p: p.lines)
 
     new_players = []
+    new_players.append(Player(weights=list(best.weights), lines=best.lines, score=best.score))
     for _ in range(population_size):
         parent_a, parent_b = select_parents(players)
         child_weights = crossover(parent_a, parent_b)
         child_weights = mutate(child_weights, rate, amount)
-        new_players.append(Player(weights=child_weights, score=0))
+        new_players.append(Player(weights=child_weights, lines=0, score=0))
  
     players.clear()
     players.extend(new_players)
@@ -77,10 +85,10 @@ def train(n_generations, population_size):
     best_overall = None
  
     for generation in range(n_generations):
-        best_this_gen = run_generation(players, population_size, rate=0.1, amount=0.3)
-        print(f"generation {generation}: best score = {best_this_gen.score:.1f}")
+        best_this_gen = run_generation(players, population_size, rate=0.2, amount=0.15)
+        print(f"generation {generation}: best score = {best_this_gen.score:.1f} | lines cleared = {best_this_gen.lines:.0f}")
 
-        if best_overall is None or best_this_gen.score > best_overall.score:
+        if best_overall is None or best_this_gen.lines > best_overall.lines:
             best_overall = best_this_gen
 
     return best_overall

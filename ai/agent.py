@@ -1,8 +1,14 @@
 from environment import Game
 import features
-import copy
 
 game = Game()
+
+def light_copy(state):
+    board_copy = [row[:] for row in state["board"]]
+    piece = state["piece"]
+    piece_copy = {**piece, "shape": [row[:] for row in piece["shape"]]}
+    return {"board": board_copy, "piece": piece_copy}
+
 
 def evaluate(feature_values, weights):
     score = 0
@@ -18,13 +24,23 @@ def get_features_vector(state):
     return vector
 
 
+def get_unique_rotations(piece_name):
+    """Avoids checking identical rotation states."""
+    if piece_name == "O":
+        return 1
+    if piece_name in ("I", "S", "Z"):
+        return 2
+    return 4
+
+
 def find_best_placement(state, weights):
     best_score = float("-inf")
     best_choice = None
+    num_rotations = get_unique_rotations(state["piece"]["name"])
 
-    for rotation in range(4):
+    for rotation in range(num_rotations):
         for col in range(Game.COLS):
-            proxy_state = copy.deepcopy(state)
+            proxy_state = light_copy(state)
 
             for _ in range(rotation):
                 game.rotate_piece(proxy_state, True)
@@ -40,6 +56,9 @@ def find_best_placement(state, weights):
             if evaluated_score > best_score:
                 best_score = evaluated_score
                 best_choice = {"rotation": rotation, "column": col}
+    
+    if best_choice is None:
+        best_choice = {"rotation": 0, "column": state["piece"]["xPos"]}
 
     return best_choice
 

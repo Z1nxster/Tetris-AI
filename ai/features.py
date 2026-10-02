@@ -40,5 +40,33 @@ def bumpiness(board):
     return total
 
 
+def max_height(board):
+    heights = column_heights(board)
+    return max(heights) if heights else 0
+
+
 def extract_features(board):
-    return [aggregate_height(board), holes(board), bumpiness(board)]
+    rows = len(board)
+    cols = len(board[0])
+    
+    heights = [0] * cols
+    hole_count = 0
+
+    # Single pass column scan
+    for c in range(cols):
+        has_block = False
+        for r in range(Game.BUFFER_ROWS, rows):
+            if board[r][c]:
+                if not has_block:
+                    heights[c] = rows - r
+                    has_block = True
+            elif has_block:
+                hole_count += 1
+
+    agg_height = sum(heights)
+    max_h = max(heights)
+    bumpiness = sum(abs(heights[i] - heights[i + 1]) for i in range(cols - 1))
+
+    return [agg_height, hole_count, bumpiness, max_h]
+# or just return [aggregate_height(board), holes(board), bumpiness(board), max_height(board)]
+# without the previous part of the function
